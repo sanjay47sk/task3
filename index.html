@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 600px;
+            background: rgb(250, 250, 250);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-bottom: 2px solid black;
+        }
+
+        .chat-header {
+            background: white;
+            color: #333;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            background: black;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-info h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .status {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .status::before {
+            content: '●';
+            color: #4ade80;
+            margin-right: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: white;
+            margin-right: 10px;
+        }
+
+        .message.user .message-avatar {
+            background: #e2e8f0;
+            margin-left: 10px;
+            order: 2;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .message.user .message-content {
+            background:#fff ;
+            /* color: white; */
+            border-bottom-right-radius: 4px;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 5px;
+            padding: 0 16px;
+        }
+
+        .message.user .timestamp {
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            background: black;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="bot-avatar" style="overflow: hidden;"><img src="chat_imag.png" width="50px" height="auto" style="border-radius: 50px;"></div>
+            <div class="header-info">
+                <h2>Chat Assistant</h2>
+                <div class="status">Online</div>
+            </div>
+        </div>
+
+        <div class="chat-messages">
+            <div class="message bot">
+                <div class="message-avatar" style="overflow: hidden;"><img src="chat_imag.png" width="auto" height="33px" style="border-radius: 50px;"></div>
+                <div>
+                    <div class="message-content">
+                        Hi there! 👋 I'm your virtual assistant. How can I help you today?
+                    </div>
+                    <div class="timestamp">10:30 AM</div>
+                </div>
+            </div>
+
+            <div class="message user">
+                <div>
+                    <div class="message-content">
+                        Hello! I need some help with my account.
+                    </div>
+                    <div class="timestamp">10:31 AM</div>
+                </div>
+                <div class="message-avatar" style="overflow: hidden; box-shadow:0 0 2px #333;"><img  width="auto" height="25px" style="border-radius: 50px;" src="data:image/png;base64,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"></div>
+            </div>
+
+            <div class="message bot">
+                    <div class="message-avatar" style="overflow: hidden;"><img src="chat_imag.png" width="auto" height="33px" style="border-radius: 50px;"></div>
+                <div>
+                    <div class="message-content">
+                        I'd be happy to help you with your account! Could you please tell me more about what you need assistance with?
+                    </div>
+                    <div class="timestamp">10:31 AM</div>
+                </div>
+            </div>
+
+            <div class="message bot">
+                <div class="message-avatar" style="overflow: hidden;"><img src="chat_imag.png" width="auto" height="33px" style="border-radius: 50px;"></div>
+                <div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="input-wrapper">
+                <input type="text" placeholder="Type your message...">
+            </div>
+            <button class="send-button">➤</button>
+        </div>
+    </div>
+</body>
+</html
